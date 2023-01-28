@@ -1,0 +1,54 @@
+{% extends "auctions/layout.html" %} {% block body %}
+<h2>{{listing.title}}</h2>
+<div>
+  {%if listing.image%}
+  <img src="{{listing.image}}" alt="{{listing.title}}" />
+  {% endif %}
+</div>
+<p>{{listing.description}}</p>
+<p>{{listing.bids}}</p>
+
+{% if user.is_authenticated %}
+{% if listing.active == True%}
+{% if user in watchers %}
+<form action="{% url 'watchlist' %}" method="post">
+  {% csrf_token %}
+  <input type="hidden" name="listing" value="{{listing.id}}" />
+  <input type="submit" name="action" value="Remove from Watchlist" />
+</form>
+{% else %}
+<form action="{% url 'watchlist' %}" method="post">
+  {% csrf_token %}
+  <input type="hidden" name="listing" value="{{listing.id}}" />
+  <input type="submit" name="action" value="Add to Watchlist" />
+</form>
+{% endif%}
+{% if user == listing.owner %}
+<a href="{% url 'close' listing.id %}"> Close Auction</a>
+{% else %}
+<p>Place a Bid</p>
+<form action="{% url 'bid' listing.id %}" method="post">
+  {% csrf_token %}
+  <input type="number" name="bid" placeholder="{{listing.bids}}" />
+  <input type="submit" name="action" value="Place Bid" />
+</form>
+{% endif %}
+{% else %}
+{%if user == listing.winner%}
+<p>Congratulations, You Won this Auction!!!</p>
+{%elif user == listing.owner%}
+<p>Congratulations, {{listing.title}} sold for {{listing.bids}}</p>
+{% endif %} 
+{% endif %} 
+
+<div> Add a Comment 
+<form action="{% url 'listing' listing.id %}" method="post">
+  {% csrf_token %}
+  <input type="text" name="comment" placeholder="Comment"/>
+  <input type="submit" name="action" value="Add Comment" />
+</form>
+</div>
+{% endif %}
+<h3>Comments</h3>
+{% for comment in comments %} <p>{{comment}}</p> {% endfor%} 
+{% endblock %}
